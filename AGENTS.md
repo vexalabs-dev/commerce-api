@@ -646,14 +646,12 @@ evoluiu.
 
 ## 18. Ambiente local e retomada
 
-Consulte README.md para preparar o ambiente em outra máquina e para o registro
-histórico da última passagem de trabalho. Confirme sempre esse registro com a
-branch, o código e a issue no GitHub; ele não substitui essas fontes.
+Consulte README.md para preparar o ambiente local. Identifique o estado do
+trabalho pela branch, pelo código e pela issue no GitHub.
 
 O AGENTS.md deve ser versionado para preservar as regras entre máquinas e agentes.
-O .env contém configurações locais e deve permanecer ignorado; .env.example é o
-modelo versionado, sem credenciais reais. Não exponha valores do .env em logs,
-mensagens, commits ou documentação.
+O .env contém configurações locais e deve permanecer ignorado. Não exponha seus
+valores em logs, mensagens, commits ou documentação.
 
 O desenvolvedor está aprendendo SQL, migrations, Docker Compose e variáveis de
 ambiente. Explique conceitos novos com exemplos pequenos quando necessário, sem

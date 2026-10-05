@@ -1,4 +1,4 @@
-package com.vexalabs.commerceapi.model;
+package com.vexalabs.commerceapi.product.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

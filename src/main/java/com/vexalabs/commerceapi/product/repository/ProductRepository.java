@@ -1,6 +1,6 @@
-package com.vexalabs.commerceapi.repository;
+package com.vexalabs.commerceapi.product.repository;
 
-import com.vexalabs.commerceapi.model.Product;
+import com.vexalabs.commerceapi.product.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

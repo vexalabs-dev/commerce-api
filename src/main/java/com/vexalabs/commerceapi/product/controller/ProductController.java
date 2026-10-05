@@ -1,7 +1,7 @@
-package com.vexalabs.commerceapi.controller;
+package com.vexalabs.commerceapi.product.controller;
 
-import com.vexalabs.commerceapi.model.Product;
-import com.vexalabs.commerceapi.service.ProductService;
+import com.vexalabs.commerceapi.product.model.Product;
+import com.vexalabs.commerceapi.product.service.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,82 +1,90 @@
 # VexaLabs Commerce API
 
-Laboratório de backend Java. As regras de colaboração e mentoria estão em
-[AGENTS.md](AGENTS.md). As demandas são mantidas nas
-[GitHub Issues](https://github.com/vexalabs-dev/commerce-api/issues).
+Backend de e-commerce desenvolvido pela VexaLabs para gerenciar o catálogo de
+produtos de uma loja. A versão atual oferece cadastro, listagem e consulta de
+produtos por identificador.
 
-## Ambiente local
+## Tecnologias
 
-Requisitos: JDK 21 e Docker com Compose. O Maven Wrapper acompanha o projeto.
-A aplicação roda na máquina; somente o PostgreSQL 17 roda no container.
+- Java 21 e Spring Boot
+- Maven
+- PostgreSQL 17
+- Spring Data JPA e Flyway
+- Docker Compose para o banco de desenvolvimento
 
-1. Clone o repositório e selecione a branch em que está trabalhando.
-2. Copie `.env.example` para `.env` e escolha uma senha local antes de iniciar um
-   banco novo. No PowerShell: `Copy-Item .env.example .env`.
-3. Inicie o Docker e execute `docker compose up -d` na raiz do projeto.
-4. Confira `docker compose logs --tail 30 postgres` e aguarde
-   `database system is ready to accept connections`.
-5. Disponibilize `DB_URL`, `DB_USER` e `DB_PASSWORD` ao processo Java e execute
-   `CommerceApiApplication` ou `./mvnw spring-boot:run`.
+## Execução local
 
-O Compose lê `.env`. O Spring não lê esse arquivo automaticamente na configuração
-atual. No IntelliJ, use as variáveis de ambiente da configuração de execução ou o
-plugin EnvFile: habilite o arquivo `.env`, mantendo **Executable desmarcado**.
-A IDE deve usar JDK 21 e a classe principal
-`com.vexalabs.commerceapi.CommerceApiApplication`.
+Requisitos: JDK 21 e Docker com Compose. O Maven Wrapper está incluído no projeto.
 
-Alternativa no PowerShell (substitua a senha pela mesma do banco):
+Configure as seguintes variáveis:
 
-```powershell
-$env:DB_URL = 'jdbc:postgresql://localhost:5433/commerce'
-$env:DB_USER = 'commerce'
-$env:DB_PASSWORD = 'replace_with_your_local_password'
-.\mvnw.cmd spring-boot:run
+| Variável | Finalidade | Valor para o ambiente local |
+| --- | --- | --- |
+| `DB_NAME` | Banco criado pelo Compose | `commerce` |
+| `DB_URL` | URL JDBC utilizada pela aplicação | `jdbc:postgresql://localhost:5433/commerce` |
+| `DB_USER` | Usuário do PostgreSQL | Definido pelo ambiente |
+| `DB_PASSWORD` | Senha do PostgreSQL | Definida pelo ambiente |
+
+O Compose aceita variáveis do terminal ou de um arquivo `.env` local, ignorado
+pelo Git. A aplicação deve receber `DB_URL`, `DB_USER` e `DB_PASSWORD` em seu
+próprio processo, por meio do terminal ou da configuração de execução da IDE.
+As credenciais devem corresponder às usadas para inicializar o banco.
+
+Inicie o banco:
+
+```sh
+docker compose up -d
 ```
 
-A aplicação escuta em `http://localhost:8080`; o banco fica em
-`localhost:5433`. Se mudar o nome do banco ou usuário, mantenha a URL e as
-variáveis coerentes com o Compose.
+Execute a aplicação com as variáveis configuradas:
 
-O Flyway aplica os arquivos de `src/main/resources/db/migration` na inicialização.
-O Hibernate usa `ddl-auto=validate` para conferir o mapeamento. Preserve migrations
-já aplicadas; mudanças posteriores devem receber uma nova versão.
+```sh
+./mvnw spring-boot:run
+```
 
-O volume Docker preserva os dados localmente. Git/push não transporta esse volume
-para outra máquina: um ambiente novo começa com banco vazio, criado pelas
-migrations. Alterar a senha no `.env` não muda a senha de um banco já inicializado.
-Não remova o volume para resolver configurações sem considerar os dados existentes.
+No Windows, use `mvnw.cmd` no lugar de `./mvnw`.
+
+A API fica disponível em `http://localhost:8080/api/products`. O PostgreSQL é
+publicado em `127.0.0.1:5433` e utiliza um volume para persistir os dados.
+
+O Flyway aplica as migrations na inicialização. O Hibernate valida a estrutura
+existente com `ddl-auto=validate`. Migrations já aplicadas devem ser preservadas;
+novas mudanças de estrutura devem ser registradas em novas versões.
+
+## API de produtos
+
+| Método | Rota | Operação |
+| --- | --- | --- |
+| `POST` | `/api/products` | Cadastrar produto |
+| `GET` | `/api/products` | Listar produtos |
+| `GET` | `/api/products/{id}` | Consultar produto por UUID |
+
+O cadastro recebe nome, descrição opcional e preço de venda em reais. Nome e preço
+são obrigatórios. O preço deve ser positivo e ter no máximo duas casas decimais.
+Produtos podem ter nomes iguais e são distinguidos pelo identificador gerado.
+
+Cadastros válidos retornam `201`. Consultas retornam `200`. Violações das
+validações do serviço retornam `400`; produtos não encontrados retornam `404`.
+Esses erros possuem um corpo JSON com o campo `message`.
+
+## Organização
+
+O código é agrupado por funcionalidade. O pacote `product` contém controller,
+serviço, entidade, repository e tratamento de exceções do catálogo.
+As migrations ficam em `src/main/resources/db/migration`.
 
 ## Testes
 
-Com o banco ativo e as variáveis disponíveis ao processo:
+Com o PostgreSQL disponível e as variáveis configuradas:
 
-```powershell
-.\mvnw.cmd test
+```sh
+./mvnw test
 ```
 
-Em Linux/macOS, use `./mvnw test`. Atualmente existe apenas o teste de carga do
-contexto, que depende do PostgreSQL configurado. Ele não comprova as regras de
-negócio ou os contratos HTTP.
+A suíte atual contém um teste de inicialização do contexto com conexão ao banco.
+A cobertura automatizada dos comportamentos do catálogo ainda está em desenvolvimento.
 
-## Registro de continuidade — 2026-09-29
+## Acompanhamento
 
-Este registro é um retrato da passagem de trabalho, não um backlog permanente.
-Confirme o estado atual no código e na issue antes de continuar.
-
-- Demanda: [ECOM-001 / issue #1](https://github.com/vexalabs-dev/commerce-api/issues/1).
-- Branch: `feat/ECOM-001-product-catalog`.
-- Implementados: entidade, repository, serviço com validações básicas, controller
-  de cadastro/listagem/consulta e migration V1 para a tabela `product`.
-- O log fornecido pelo desenvolvedor confirmou conexão, aplicação da V1 e
-  inicialização HTTP na porta 8080.
-- A demanda continua em andamento, sem aprovação final para merge.
-- Pendentes conhecidos: tradução das exceções para respostas HTTP adequadas,
-  testes dos comportamentos e validação das requisições e persistência após
-  reinício. Não presumir que esses fluxos já foram verificados.
-- O próximo agente deve continuar a mentoria e permitir que o desenvolvedor
-  implemente e investigue; não completar as pendências automaticamente.
-
-Validação deste checkpoint: `mvnw.cmd -q test` passou em 2026-09-29, com as
-variáveis locais fornecidas ao processo e o PostgreSQL existente. A V1 foi
-validada como já aplicada. Não houve teste automatizado dos endpoints nem
-recriação de um banco vazio nesta verificação.
+Demandas e revisões são acompanhadas nas
+[issues do projeto](https://github.com/vexalabs-dev/commerce-api/issues).
