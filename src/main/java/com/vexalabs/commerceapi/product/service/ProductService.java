@@ -35,7 +35,11 @@ public class ProductService {
             throw new InvalidProductDataException("O nome do produto é obrigatório");
         }
 
-        Product newProduct = new Product(product.getName(), product.getDescription(), product.getSalePrice());
+        Product newProduct = new Product(
+                product.getName(),
+                product.getDescription(),
+                product.getSalePrice()
+        );
 
         repository.save(newProduct);
 
